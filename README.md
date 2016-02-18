@@ -1,4 +1,4 @@
-cloudconvert-php
+cloudconvert-php [For Guzzlehttp 6]
 =======================
 
 This is a lightweight wrapper for the [CloudConvert](https://cloudconvert.com) API.
