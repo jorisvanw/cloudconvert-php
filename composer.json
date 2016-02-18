@@ -1,7 +1,7 @@
 {
-    "name": "cloudconvert/cloudconvert-php",
-    "description": "PHP Wrapper for CloudConvert APIs",
-    "homepage": "https://github.com/cloudconvert/cloudconvert-php",
+    "name": "jorisvanw/cloudconvert-php",
+    "description": "PHP Wrapper for CloudConvert APIs [For Guzzlehttp 6]",
+    "homepage": "https://github.com/jorisvanw/cloudconvert-php",
     "authors": [
         {
             "name": "Josias Montag",
