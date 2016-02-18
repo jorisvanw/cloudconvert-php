@@ -48,7 +48,7 @@ class Process extends ApiObject
         if (isset($parameters['file']) && gettype($parameters['file']) == 'resource') {
             $file = $parameters['file'];
             unset($parameters['file']);
-            if ($parameters['wait']) {
+            if (isset($parameters['wait']) && $parameters['wait']) {
                 unset($parameters['wait']);
                 $wait = true;
             }
