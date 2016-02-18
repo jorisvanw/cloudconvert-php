@@ -7,8 +7,9 @@ namespace CloudConvert;
 use CloudConvert\Exceptions\InvalidParameterException;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ParseException;
-use GuzzleHttp\Stream\Stream;
+use GuzzleHttp\Psr7;
+use GuzzleHttp\Exception\ClientException;
+
 
 /**
  * Base Wrapper to manage login and exchanges with CloudConvert API
@@ -89,47 +90,50 @@ class Api
             $url = $this->protocol . '://' . $this->endpoint . $path;
         }
 
-        $request = $this->http_client->createRequest($method, $url);
-
+        $options = [
+            'headers' => [],
+            'body'    => null
+        ];
 
         if (is_array($content) && $method == 'GET') {
-            $query = $request->getQuery();
-            foreach ($content as $key => $value) {
-                $query->set($key, $value);
-            }
+            $options['query'] = $content;
         } elseif (gettype($content) == 'resource' && $method == 'PUT') {
             // is upload
-            $request->setBody(Stream::factory($content));
+            $options['body'] = Psr7\stream_for($content);
 
         } elseif (is_array($content)) {
             $body = json_encode($content);
-            $request->setBody(Stream::factory($body));
-            $request->setHeader('Content-Type', 'application/json; charset=utf-8');
+            $options['body'] = Psr7\stream_for($body);
+            $options['headers']['Content-Type'] = 'application/json; charset=utf-8';
         }
 
         if ($is_authenticated) {
-            $request->setHeader('Authorization', 'Bearer ' . $this->api_key);
+            $options['headers']['Authorization'] = 'Bearer ' . $this->api_key;
         }
 
+        if (isset($options['query']) && !count($options['query'])) {
+            $url = $url . '?' . http_build_query($options['query']);
+        }
 
-
+        $request = new Psr7\Request($method, $url, $options['headers'], $options['body']);
 
         try {
             $response = $this->http_client->send($request);
-            if (strpos($response->getHeader('Content-Type'), 'application/json') === 0) {
-                return $response->json();
+            if (strpos($response->getHeaderLine('Content-Type'), 'application/json') === 0) {
+                return json_decode($response->getBody(), true);
             } elseif ($response->getBody()->isReadable()) {
                 // if response is a download, return the stream
                 return $response->getBody();
             }
-        } catch (Exception $e) {
+        } catch (ClientException $e) {
             if (!$e->getResponse()) {
                 throw $e;
             }
+
             // check if response is JSON error message from the CloudConvert API
             try {
-                $json = $e->getResponse()->json();
-            } catch (ParseException $parseexception) {
+                $json = json_encode($e->getResponse()->getBody(), true);
+            } catch (Exception $parseexception) {
                 throw $e;
             }
             if (isset($json['message']) || isset($json['error'])) {
