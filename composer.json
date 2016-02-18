@@ -6,10 +6,14 @@
         {
             "name": "Josias Montag",
             "email": "josias@montag.info"
+        },
+        {
+            "name": "Joris van Willigen",
+            "email": "me@jorisvanw.me"
         }
     ],
     "require": {
-        "guzzlehttp/guzzle": ">=4.0,<6.0"
+        "guzzlehttp/guzzle": ">=6.0"
     },
     "require-dev": {
         "phpunit/phpunit": "4.0.*",
